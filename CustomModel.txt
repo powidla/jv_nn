@@ -1,0 +1,34 @@
+public class CustomModel {
+
+    public static Block getCnn() {
+        return new SequentialBlock()
+                .add(Conv2d.builder()
+                        .setKernelShape(new Shape(3, 3))
+                        .optStride(new Shape(1, 1))
+                        .setFilters(64)
+                        .optBias(false)
+                        .build())
+                .add(Activation::relu)
+                .add(Pool.maxPool2dBlock(new Shape(2, 2), new Shape(2, 2)))
+                .add(Conv2d.builder()
+                        .setKernelShape(new Shape(3, 3))
+                        .optStride(new Shape(1, 1))
+                        .setFilters(64)
+                        .optBias(false)
+                        .build())
+                .add(Activation::relu)
+                .add(Pool.maxPool2dBlock(new Shape(2, 2), new Shape(2, 2)))
+                .add(Blocks.batchFlattenBlock())
+                .add(Dropout.builder().optRate(0.5f).build())
+                .add(Linear
+                        .builder()
+                        .setUnits(2048)
+                        .build())
+                .add(Activation::relu)
+                .add(Linear
+                        .builder()
+                        .setUnits(880)
+                        .build());
+    }
+
+}

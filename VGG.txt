@@ -1,0 +1,43 @@
+public class VGGModel {
+
+    public int[][] convArch = {{1, 64}, {1, 128}, {2, 256}, {2, 512}, {2, 512}};
+
+    public static Block getCnn() {
+        SequentialBlock block = new SequentialBlock();
+        VGGModel vgg = new VGGModel();
+        // The convolutional layer part
+        for (int[] arr : vgg.convArch) {
+            block.add(vgg.vggBlock(arr[0], arr[1]));
+        }
+
+        // The fully connected layer part
+        block.add(Blocks.batchFlattenBlock())
+                .add(Linear.builder().setUnits(4096).build())
+                .add(Activation::relu)
+                .add(Dropout.builder().optRate(0.5f).build())
+                .add(Linear.builder().setUnits(4096).build())
+                .add(Activation::relu)
+                .add(Dropout.builder().optRate(0.5f).build())
+                .add(Linear.builder().setUnits(880).build());
+
+        return block;
+    }
+
+    public SequentialBlock vggBlock(int numConvs, int numChannels) {
+
+        SequentialBlock tempBlock = new SequentialBlock();
+        for (int i = 0; i < numConvs; i++) {
+            tempBlock
+                    .add(
+                            Conv2d.builder()
+                                    .setFilters(numChannels)
+                                    .setKernelShape(new Shape(3, 3))
+                                    .optPadding(new Shape(1, 1))
+                                    .build())
+                    .add(Activation::relu);
+        }
+        tempBlock.add(Pool.maxPool2dBlock(new Shape(2, 2), new Shape(2, 2)));
+        return tempBlock;
+    }
+
+}
